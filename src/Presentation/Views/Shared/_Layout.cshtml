@@ -1,0 +1,36 @@
+﻿@{
+    var title = ViewData["Title"]?.ToString();
+    title = string.IsNullOrEmpty(title) ? "ByCodersTec" : title + " - ByCodersTec";
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>ByCodersTec</title>
+    <meta name="title" content="ByCodersTec" />
+    <meta name="autor" content="Fabricio Gabrielli da Silva" />
+    <meta name="company" content="ByCodersTec" />
+    <meta name="robots" content="all" />
+    <meta name="revisit-after" content="1 days" />
+    <meta name="geo.country" content="br" />
+    <meta name="rating" content="General" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3/dist/darkly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
+    @await RenderSectionAsync("ScriptsHead", required: false)
+</head>
+
+<body>
+    <header></header>
+
+    @RenderBody()
+
+    <footer></footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    @await RenderSectionAsync("ScriptsFooter", required: false)
+</body>
+</html>

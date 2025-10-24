@@ -1,85 +1,86 @@
-# Desafio programação - para vaga desenvolvedor .Net
+# Desafio ByCodersTec
 
-Por favor leiam este documento do começo ao fim, com muita atenção.
-O intuito deste teste é avaliar seus conhecimentos técnicos de programação.
-O teste consiste em parsear [este arquivo de texto(CNAB)](https://github.com/ByCodersTec/desafio.net/blob/master/CNAB.txt) e salvar suas informações(transações financeiras) em uma base de dados a critério do candidato.
-Este desafio deve ser feito por você em sua casa. Gaste o tempo que você quiser, porém normalmente você não deve precisar de mais do que algumas horas.
+Aplicação .NET Core 8 para processar arquivos CNAB, normalizar dados, armazenar em SQL Server com Dapper, e exibir transações por loja com saldo total. Usa Clean Architecture, sem MediatR.
 
-# Instruções de entrega do desafio
+## Pré-requisitos
+- .NET 8 SDK
+- SQL Server (local ou Docker)
+- Docker (opcional, para Docker Compose)
 
-1. Primeiro, faça um fork deste projeto para sua conta no Github (crie uma se você não possuir).
-2. Em seguida, implemente o projeto tal qual descrito abaixo, em seu clone local.
-3. Por fim, envie via email o projeto ou o fork/link do projeto para seu contato Bycoders_ com cópia para rh@bycoders.com.br.
+## Setup
+1. Clone o repositório:
+   ```bash
+   git clone <seu-repositorio>
+   
+2. Configure a connection string em appsettings.json:json
 
-# Descrição do projeto
+"ConnectionStrings": {
+  "DefaultConnection": "Server=localhost;Database=DesafioDb;Trusted_Connection=True;TrustServerCertificate=True;"
+}
 
-Você recebeu um arquivo CNAB com os dados das movimentações finanaceira de várias lojas.
-Precisamos criar uma maneira para que estes dados sejam importados para um banco de dados.
+3. Crie o banco e a tabela:bash
 
-Sua tarefa é criar uma interface web que aceite upload do [arquivo CNAB](https://github.com/ByCodersTec/desafio.net/blob/master/CNAB.txt), normalize os dados e armazene-os em um banco de dados relacional e exiba essas informações em tela.
+sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -d DesafioDb -i setup.sql
 
-**Sua aplicação web DEVE:**
+4. Restaure pacotes e rode:bash
 
-1. Ter uma tela (via um formulário) para fazer o upload do arquivo(pontos extras se não usar um popular CSS Framework )
-2. Interpretar ("parsear") o arquivo recebido, normalizar os dados, e salvar corretamente a informação em um banco de dados relacional, **se atente as documentações** que estão logo abaixo.
-3. Exibir uma lista das operações importadas por lojas, e nesta lista deve conter um totalizador do saldo em conta
-4. Ser escrita obrigatoriamente em .Net em versões recentes, pode ser .Net Core, ASP.MVC, etc
-5. Ser simples de configurar e rodar. Ela deve utilizar apenas linguagens e bibliotecas livres ou gratuitas.
-6. Git com commits atomicos e bem descritos
-7. PostgreSQL, MySQL ou SQL Server
-8. Ter testes automatizados
-9. Docker compose (Pontos extras se utilizar)
-10. Readme file descrevendo bem o projeto e seu setup
-11. Incluir informação descrevendo como consumir o endpoint da API
+cd DesafioByCodersTec.Presentation
+dotnet restore
+dotnet run
 
-**Sua aplicação web não precisa:**
+5. Acesse: http://localhost:8080 (ou porta configurada).
 
-1. Lidar com autenticação ou autorização (pontos extras se ela fizer, mais pontos extras se a autenticação for feita via OAuth).
-2. Não ser escrita usando algum framework específico (mas não há nada errado em usá-los também, use o que achar melhor).
-3. Documentação da api.(Será um diferencial e pontos extras se fizer)
 
-# Documentação do CNAB
 
-| Descrição do campo  | Inicio | Fim | Tamanho | Comentário
-| ------------- | ------------- | -----| ---- | ------
-| Tipo  | 1  | 1 | 1 | Tipo da transação
-| Data  | 2  | 9 | 8 | Data da ocorrência
-| Valor | 10 | 19 | 10 | Valor da movimentação. *Obs.* O valor encontrado no arquivo precisa ser divido por cem(valor / 100.00) para normalizá-lo.
-| CPF | 20 | 30 | 11 | CPF do beneficiário
-| Cartão | 31 | 42 | 12 | Cartão utilizado na transação 
-| Hora  | 43 | 48 | 6 | Hora da ocorrência atendendo ao fuso de UTC-3
-| Dono da loja | 49 | 62 | 14 | Nome do representante da loja
-| Nome loja | 63 | 81 | 19 | Nome da loja
+Com DockerRode:bash
 
-# Documentação sobre os tipos das transações
+docker-compose up --build
 
-| Tipo | Descrição | Natureza | Sinal |
-| ---- | -------- | --------- | ----- |
-| 1 | Débito | Entrada | + |
-| 2 | Boleto | Saída | - |
-| 3 | Financiamento | Saída | - |
-| 4 | Crédito | Entrada | + |
-| 5 | Recebimento Empréstimo | Entrada | + |
-| 6 | Vendas | Entrada | + |
-| 7 | Recebimento TED | Entrada | + |
-| 8 | Recebimento DOC | Entrada | + |
-| 9 | Aluguel | Saída | - |
+Acesse: http://localhost:8080.
 
-# Avaliação
+Endpoints da APIPOST /api/transactions/upload: Faz upload do arquivo CNAB.Content-Type: multipart/form-data
+Exemplo: curl -X POST -F "file=@CNAB.txt" http://localhost:8080/api/transactions/upload
 
-Seu projeto será avaliado de acordo com os seguintes critérios.
+GET /api/transactions/store/{storeName}: Lista transações por loja.
+GET /api/transactions/store/{storeName}/balance: Retorna saldo da loja.
+GET /api/transactions/stores: Lista todas as lojas.
 
-1. Sua aplicação preenche os requesitos básicos?
-2. Você documentou a maneira de configurar o ambiente e rodar sua aplicação?
-3. Você seguiu as instruções de envio do desafio?
-4. Qualidade e cobertura dos testes unitários.
+Testes
 
-Adicionalmente, tentaremos verificar a sua familiarização com as bibliotecas padrões (standard libs), bem como sua experiência com programação orientada a objetos a partir da estrutura de seu projeto.
+cd DesafioByCodersTec.Tests
+dotnet test
 
-# Referência
+### 6. Estrutura
 
-Este desafio foi baseado neste outro desafio: https://github.com/lschallenges/data-engineering
+Domain: Entidades e interfaces.
+Application: Lógica de negócio, parsing de CNAB, validações.
+Infrastructure: Dapper, acesso ao SQL Server.
+Presentation: API REST e interface MVC.
+Tests: Testes unitários com xUnit.
+
+### 7. Tecnologias
+.NET 8 (C#)
+SQL Server
+Dapper
+FluentValidation
+xUnit, Moq, FluentAssertions
+Docker Compose (opcional)
 
 ---
 
-Boa sorte!
+### 8. Como Consumir a API
+- **Upload**: Use Postman ou `curl` para enviar o arquivo `CNAB.txt` para `/api/transactions/upload`.
+- **Listar Transações**: `GET /api/transactions/store/BAR%20DO%20JOÃO`.
+- **Saldo**: `GET /api/transactions/store/BAR%20DO%20JOÃO/balance`.
+- **Lojas**: `GET /api/transactions/stores`.
+
+---
+
+### 9. Notas de Avaliação
+- **Requisitos**: Atende upload, parsing, armazenamento, exibição e totalização.
+- **Documentação**: README detalhado, API com Swagger.
+- **Commits**: Estruture commits atômicos (ex.: "Add CNAB parsing", "Implement UI", "Add tests").
+- **Testes**: Cobertura para parsing, validações, e consultas.
+- **Extras**: Docker Compose, CSS puro, API documentada.
+
+Se precisar de ajustes ou mais testes (ex.: para controllers), avise!

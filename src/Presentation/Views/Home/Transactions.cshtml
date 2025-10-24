@@ -1,0 +1,77 @@
+﻿@model IEnumerable<Domain.Entities.Transaction>
+@{
+    ViewData["Title"] = "Transactions by Store";
+    var stores = ViewBag.Stores as IEnumerable<string>;
+    var balance = ViewBag.Balance as decimal?;
+    var selectedStore = ViewBag.SelectedStore as string;
+}
+
+<h1>Transactions by Store</h1>
+
+<form asp-action="Transactions" method="get">
+    <label for="storeName">Select Store:</label>
+    <select id="storeName" name="storeName" onchange="this.form.submit()">
+        <option value="">-- Select a store --</option>
+        @foreach (var store in stores)
+        {
+            <option value="@store" selected="@(store == selectedStore ? "selected" : null)">@store</option>
+        }
+    </select>
+</form>
+
+@if (Model.Any())
+{
+    <h2>Transactions for @selectedStore</h2>
+    <p><strong>Balance: </strong>@balance?.ToString("C")</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Value</th>
+                <th>CPF</th>
+                <th>Card</th>
+                <th>Store Owner</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var transaction in Model)
+            {
+                <tr>
+                    <td>@transaction.Type</td>
+                    <td>@transaction.DateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td>@transaction.GetSignedValue().ToString("C")</td>
+                    <td>@transaction.Cpf</td>
+                    <td>@transaction.Card</td>
+                    <td>@transaction.StoreOwner</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<style>
+    select, table {
+        width: 100%;
+        max-width: 800px;
+        margin: 10px 0;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    select {
+        padding: 5px;
+    }
+</style>

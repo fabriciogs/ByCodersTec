@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "CNAB File Upload";
+}
+
+<div class="container">
+    <div class="page-header" id="banner">
+        <div class="row">
+            <div class="col-lg-8 col-md-7 col-sm-6">
+                <h1>Upload CNAB File</h1>
+
+                @if (ViewBag.Success != null)
+                {
+                    <div class="success-message">@ViewBag.Success</div>
+                }
+                @if (ViewBag.Error != null)
+                {
+                    <div class="error-message">@ViewBag.Error</div>
+                }
+
+                <form asp-action="Upload" method="post" enctype="multipart/form-data">
+                    <div>
+                        <label for="file">Select CNAB File:</label>
+                        <input type="file" id="file" name="file" accept=".txt" />
+                    </div>
+                    <button type="submit">Upload</button>
+                </form>
+
+                <a href="@Url.Action("Transactions")">View Transactions</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .success-message { color: green; margin: 10px 0; }
+    .error-message { color: red; margin: 10px 0; }
+</style>
