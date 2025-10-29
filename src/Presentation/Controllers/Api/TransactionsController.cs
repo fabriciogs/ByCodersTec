@@ -16,7 +16,7 @@ namespace Presentation.Controllers.Api
             try
             {
                 using var stream = file.OpenReadStream();
-                await transactionService.ProcessCnabFileAsync(stream);
+                await transactionService.ProcessCnabFileAsync(stream, file.FileName, "");
                 return Ok("File processed successfully");
             }
             catch (Exception ex)

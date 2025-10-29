@@ -1,23 +1,11 @@
 using Application.Repositories;
 using Application.Services;
-using FluentValidation;
-using FluentValidation.AspNetCore;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Localization;
+using Presentation.WebApi;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add logging
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-var logger = LoggerFactory.Create(config =>
-{
-    config.ClearProviders();
-    config.AddDebug();
-    config.AddConsole();
-    config.AddConfiguration(builder.Configuration.GetSection("Logging"));
-}).CreateLogger("Program");
 
 builder.Services
     .Configure(delegate (RequestLocalizationOptions options)
@@ -36,27 +24,22 @@ builder.Services
 
 // Services
 builder.Services.AddControllersWithViews().AddViewOptions(options => options.HtmlHelperOptions.ClientValidationEnabled = true);
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 // Application
 var connectionString = "DefaultConnection";
-logger.LogInformation($"Trying to open connection string '{connectionString}'...");
 builder.Services.AddSingleton<IDbConnectionFactory>(_ => new SqlServerConnectionFactory(builder.Configuration.GetConnectionString(connectionString)));
 builder.Services.AddHealthChecks().AddSqlServer(connectionString);
-logger.LogInformation($"Connection string '{connectionString}' found.");
 
-logger.LogInformation("Starting Dependency Injections...");
-builder.Services.AddScoped<ITransactionService, TransactionService>();
+// Dependency Injection
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<IWebApiClient, WebApiClient>();
 
-// FluentValidation
-builder.Services.AddFluentValidationAutoValidation().AddValidatorsFromAssemblyContaining<Application.Dtos.TransactionDtoValidator>();
+// Add services to the container.
+builder.Services.AddHttpClient(); // This line registers IHttpClientFactory
 
 // CORS
 builder.Services.AddCors(options => options.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
-
-logger.LogInformation("builder.Services => DONE...");
 
 
 var app = builder.Build();
@@ -64,9 +47,6 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    logger.LogInformation("Environment is Development.");
 }
 
 app.UseAntiforgery();

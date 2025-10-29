@@ -8,7 +8,7 @@
 
 <h1>Transactions by Store</h1>
 
-<form asp-action="Transactions" method="get">
+<form method="get">
     <label for="storeName">Select Store:</label>
     <select id="storeName" name="storeName" onchange="this.form.submit()">
         <option value="">-- Select a store --</option>
@@ -27,7 +27,7 @@
         <thead>
             <tr>
                 <th>Type</th>
-                <th>Date</th>
+                <th>Date Time</th>
                 <th>Value</th>
                 <th>CPF</th>
                 <th>Card</th>
@@ -39,7 +39,7 @@
             {
                 <tr>
                     <td>@transaction.Type</td>
-                    <td>@transaction.DateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td>@transaction.OccurrenceDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
                     <td>@transaction.GetSignedValue().ToString("C")</td>
                     <td>@transaction.Cpf</td>
                     <td>@transaction.Card</td>

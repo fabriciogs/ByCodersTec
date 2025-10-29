@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>WebApi</name>
+    </assembly>
+    <members>
+        <member name="T:WebApi.Controllers.TransactionsController">
+            <summary>
+            Provides endpoints for managing and retrieving transaction data.
+            </summary>
+            <remarks>The <c>TransactionsController</c> class handles HTTP requests related to transaction
+            processing, including uploading CNAB files, retrieving transactions by store, fetching store balances, and
+            listing all store names. It utilizes asynchronous operations to interact with the transaction service and logs
+            critical errors during processing.</remarks>
+            <param name="logger"></param>
+            <param name="transactionService"></param>
+        </member>
+        <member name="M:WebApi.Controllers.TransactionsController.#ctor(Microsoft.Extensions.Logging.ILogger{WebApi.Controllers.TransactionsController},Application.Services.ITransactionService)">
+            <summary>
+            Provides endpoints for managing and retrieving transaction data.
+            </summary>
+            <remarks>The <c>TransactionsController</c> class handles HTTP requests related to transaction
+            processing, including uploading CNAB files, retrieving transactions by store, fetching store balances, and
+            listing all store names. It utilizes asynchronous operations to interact with the transaction service and logs
+            critical errors during processing.</remarks>
+            <param name="logger"></param>
+            <param name="transactionService"></param>
+        </member>
+        <member name="M:WebApi.Controllers.TransactionsController.ImportLinesAsync(System.Collections.Generic.List{System.String},System.String,System.String)">
+            <summary>
+            Handles the upload of CNAB file data for processing.
+            </summary>
+            <remarks>This method processes the uploaded CNAB file data asynchronously. It logs critical
+            errors if exceptions occur during processing.</remarks>
+            <param name="dataLines">A list of strings representing the lines of data from the CNAB file. Must not be null or empty.</param>
+            <param name="fileName">The name of the file being uploaded. Must not be null or empty.</param>
+            <param name="userId">An optional identifier for the user performing the upload.</param>
+            <returns>An <see cref="T:Microsoft.AspNetCore.Mvc.IActionResult"/> indicating the result of the upload operation. Returns <see
+            cref="T:Microsoft.AspNetCore.Mvc.BadRequestResult"/> if the input is invalid or an error occurs, otherwise returns <see
+            cref="T:Microsoft.AspNetCore.Mvc.OkResult"/> upon successful processing.</returns>
+        </member>
+        <member name="M:WebApi.Controllers.TransactionsController.GetByStore(System.String)">
+            <summary>
+            Retrieves all transactions associated with the specified store.
+            </summary>
+            <remarks>This method performs an asynchronous operation to fetch transactions from the data
+            source.</remarks>
+            <param name="storeName">The name of the store for which to retrieve transactions. Cannot be null or empty.</param>
+            <returns>An <see cref="T:Microsoft.AspNetCore.Mvc.IActionResult"/> containing a collection of transactions for the specified store.</returns>
+        </member>
+        <member name="M:WebApi.Controllers.TransactionsController.GetBalance(System.String)">
+            <summary>
+            Retrieves the current balance for the specified store.
+            </summary>
+            <remarks>This method calls the transaction service to obtain the balance for the specified
+            store and returns it in the response.</remarks>
+            <param name="storeName">The name of the store for which to retrieve the balance. Cannot be null or empty.</param>
+            <returns>An <see cref="T:Microsoft.AspNetCore.Mvc.IActionResult"/> containing the store name and its current balance.</returns>
+        </member>
+        <member name="M:WebApi.Controllers.TransactionsController.GetAllStores">
+            <summary>
+            Retrieves a list of all store names.
+            </summary>
+            <remarks>This method sends an HTTP GET request to fetch the names of all available stores. The
+            result is returned as an HTTP 200 OK response containing the list of store names.</remarks>
+            <returns>An <see cref="T:Microsoft.AspNetCore.Mvc.IActionResult"/> containing a list of store names. The response is an HTTP 200 OK with the
+            list of store names if successful.</returns>
+        </member>
+    </members>
+</doc>

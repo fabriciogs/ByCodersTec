@@ -1,37 +1,35 @@
 ﻿@{
     ViewData["Title"] = "CNAB File Upload";
 }
+<section>
+	<header class="main">
+		<h1>CNAB File Upload</h1>
+	</header>
 
-<div class="container">
-    <div class="page-header" id="banner">
-        <div class="row">
-            <div class="col-lg-8 col-md-7 col-sm-6">
-                <h1>Upload CNAB File</h1>
+	<form asp-action="Upload" method="post" enctype="multipart/form-data">
+		<div class="row gtr-uniform">
+			<div class="col-12">
+				<label for="file">Select CNAB File:</label>
+				<input type="file" id="file" name="file" accept=".txt" />
+			</div>
+			<div class="col-12">
+				<ul class="actions">
+					<li><input type="submit" value="Upload" class="primary" /></li>
+				</ul>
+			</div>
+			@if (ViewBag.Success != null)
+			{
+				<div class="col-12">
+					<p class="success-message">@ViewBag.Success</p>
+				</div>
+			}
+			@if (ViewBag.Error != null)
+			{
+				<div class="col-12">
+					<p class="error-message">@ViewBag.Error</p>
+				</div>
+			}
+		</div>
+	</form>
 
-                @if (ViewBag.Success != null)
-                {
-                    <div class="success-message">@ViewBag.Success</div>
-                }
-                @if (ViewBag.Error != null)
-                {
-                    <div class="error-message">@ViewBag.Error</div>
-                }
-
-                <form asp-action="Upload" method="post" enctype="multipart/form-data">
-                    <div>
-                        <label for="file">Select CNAB File:</label>
-                        <input type="file" id="file" name="file" accept=".txt" />
-                    </div>
-                    <button type="submit">Upload</button>
-                </form>
-
-                <a href="@Url.Action("Transactions")">View Transactions</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-    .success-message { color: green; margin: 10px 0; }
-    .error-message { color: red; margin: 10px 0; }
-</style>
+</section>
