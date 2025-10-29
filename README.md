@@ -1,86 +1,190 @@
-# Desafio ByCodersTec
+# ByCoders Challenge - .NET 9 Web API with OAuth Authentication
 
-Aplicação .NET Core 8 para processar arquivos CNAB, normalizar dados, armazenar em SQL Server com Dapper, e exibir transações por loja com saldo total. Usa Clean Architecture, sem MediatR.
+Forked from [https://github.com/ByCodersTec/desafio.net](https://github.com/ByCodersTec/desafio.net).
 
-## Pré-requisitos
-- .NET 8 SDK
-- SQL Server (local ou Docker)
-- Docker (opcional, para Docker Compose)
+A clean, testable, and production-ready solution for the **ByCoders Developer Challenge**, implementing CNAB file parsing, financial transaction storage, and store balance reporting using **.NET 9**, **Clean Architecture**, **Dapper**, and **SQL Server**.
 
-## Setup
-1. Clone o repositório:
-   ```bash
-   git clone <seu-repositorio>
-   
-2. Configure a connection string em appsettings.json:json
+This project meets all required criteria and includes extra points for:
+- **Clean Architecture** with dependency inversion
+- **Dapper** for high-performance data access
+- **Unit tests with greater than 70% code coverage** (xUnit + Moq)
+- **Docker Compose** support (extra points)
+- **Swagger UI** with full API documentation
+- **No external CSS frameworks** (API-only)
 
-"ConnectionStrings": {
-  "DefaultConnection": "Server=localhost;Database=DesafioDb;Trusted_Connection=True;TrustServerCertificate=True;"
-}
+---
 
-3. Crie o banco e a tabela:bash
+## Technologies & Tools
 
-sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -d DesafioDb -i setup.sql
+| Layer             | Technology                                      |
+|------------------|--------------------------------------------------|
+| **Language**     | C# 13 (.NET 9)                                   |
+| **Architecture** | Clean Architecture (Domain → Application → Infrastructure → Presentation) |
+| **Web Framework**| ASP.NET Core Web API                             |
+| **Data Access**  | Dapper (lightweight, fast)                       |
+| **Database**     | SQL Server (or LocalDB for development)          |
+| **Testing**      | xUnit, Moq, Coverlet                             |
+| **API Docs**     | Swashbuckle (Swagger UI)                          |
+| **Containerization** | Docker Compose                                |
+| **Package Manager** | NuGet                                          |
+| **IDE Support**  | VS Code, Rider, Visual Studio                    |
 
-4. Restaure pacotes e rode:bash
+---
 
-cd DesafioByCodersTec.Presentation
-dotnet restore
+## Project Structure
+
+ByCoders/
+├── ByCoders.Domain/          # Entities, value objects
+├── ByCoders.Application/     # Use cases, DTOs, interfaces
+├── ByCoders.Infrastructure/  # Dapper repos, EF Identity
+├── ByCoders.WebApi/          # Web API, Controllers, Program.cs
+├── ByCoders.Presentation/    # Presentation (Html + CSS), Controllers, Views, Program.cs
+├── ByCoders.Tests/           # Unit tests (>70% coverage)
+├── docker-compose.yml
+└── README.md
+
+---
+
+## Prerequisites
+
+| Tool | Version | Install |
+|------|--------|--------|
+| .NET SDK | 9.0+ | [dotnet.microsoft.com](https://dotnet.microsoft.com/download/dotnet/9.0) |
+| SQL Server | 2019+ or LocalDB | `sqlcmd`, Docker, or install locally |
+| Git | Any | `git --version` |
+| Docker & Docker Compose (optional) | Latest | [docker.com](https://www.docker.com/) |
+
+---
+
+## Setup on Linux or Mac OS
+
+### 1. Clone the Repository
+
+```
+git clone https://github.com/fabriciogs/ByCodersTec.git
+cd ByCoders
+```
+
+### 2. Choose Your SQL Server Option
+
+**Option A:** LocalDB (macOS/Linux via Docker)
+
+```
+docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=YourStrong@Passw0rd" \
+  -p 1433:1433 --name sqlserver \
+  -d mcr.microsoft.com/mssql/server:2022-latest
+```
+Wait ~30 seconds for SQL Server to start.
+
+**Option B:** SQL Server on Docker (Production-like)
+
+```
+docker-compose up -d db
+```
+**Option C:** Local SQL Server (Linux)
+
+```
+# Ubuntu example
+sudo apt update && sudo apt install mssql-server
+# Follow setup: https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-docker-container-deployment
+```
+
+## Database Setup - Create the Database
+
+```
+# Open the file: https://github.com/fabriciogs/ByCodersTec/blob/main/src/setup.sql and run the script
+```
+
+## Running the Application
+
+**Option 1:** Local Development (.NET CLI)
+
+```
+cd ByCoders.WebApi
 dotnet run
+```
 
-5. Acesse: http://localhost:8080 (ou porta configurada).
+API will be available at:
+HTTPS: https://localhost:5001
+Swagger UI: https://localhost:5001/swagger
 
-
-
-Com DockerRode:bash
-
+**Option 2:** Docker Compose (Recommended)
+```
 docker-compose up --build
+```
 
-Acesse: http://localhost:8080.
+API available at: http://localhost:5000
 
-Endpoints da APIPOST /api/transactions/upload: Faz upload do arquivo CNAB.Content-Type: multipart/form-data
-Exemplo: curl -X POST -F "file=@CNAB.txt" http://localhost:8080/api/transactions/upload
+## API Usage (Swagger)
 
-GET /api/transactions/store/{storeName}: Lista transações por loja.
-GET /api/transactions/store/{storeName}/balance: Retorna saldo da loja.
-GET /api/transactions/stores: Lista todas as lojas.
+1. Open Swagger UI: https://localhost:5001/swagger
+2. No authentication required
+3. Use endpoints directly:
 
-Testes
+POST /api/transactions/upload
+- Upload your CNAB.txt file
+- Parses, normalizes (divides value by 100), and saves to DB
 
-cd DesafioByCodersTec.Tests
+GET /api/transactions/stores
+
+-Returns list of stores with:
+    - Store name & owner
+    - Total balance (with correct signs per transaction type)
+    - All transactions
+
+
+## Testing
+
+```
 dotnet test
+```
 
-### 6. Estrutura
+Generate HTML coverage report:
 
-Domain: Entidades e interfaces.
-Application: Lógica de negócio, parsing de CNAB, validações.
-Infrastructure: Dapper, acesso ao SQL Server.
-Presentation: API REST e interface MVC.
-Tests: Testes unitários com xUnit.
+```
+dotnet test --collect:"XPlat Code Coverage"
 
-### 7. Tecnologias
-.NET 8 (C#)
-SQL Server
-Dapper
-FluentValidation
-xUnit, Moq, FluentAssertions
-Docker Compose (opcional)
+# Install report generator if needed
+dotnet tool install -g dotnet-reportgenerator-globaltool
 
----
+reportgenerator \
+  -reports:**/coverage.cobertura.xml \
+  -targetdir:coveragereport \
+  -reporttypes:Html
 
-### 8. Como Consumir a API
-- **Upload**: Use Postman ou `curl` para enviar o arquivo `CNAB.txt` para `/api/transactions/upload`.
-- **Listar Transações**: `GET /api/transactions/store/BAR%20DO%20JOÃO`.
-- **Saldo**: `GET /api/transactions/store/BAR%20DO%20JOÃO/balance`.
-- **Lojas**: `GET /api/transactions/stores`.
+open coveragereport/index.html  # macOS
+xdg-open coveragereport/index.html  # Linux
+```
 
----
 
-### 9. Notas de Avaliação
-- **Requisitos**: Atende upload, parsing, armazenamento, exibição e totalização.
-- **Documentação**: README detalhado, API com Swagger.
-- **Commits**: Estruture commits atômicos (ex.: "Add CNAB parsing", "Implement UI", "Add tests").
-- **Testes**: Cobertura para parsing, validações, e consultas.
-- **Extras**: Docker Compose, CSS puro, API documentada.
+## Docker Compose File
 
-Se precisar de ajustes ou mais testes (ex.: para controllers), avise!
+```
+version: '3.8'
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrong@Passw0rd"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-U", "sa", "-P", "YourStrong@Passw0rd", "-Q", "SELECT 1"]
+      interval: 10s
+      retries: 10
+
+  api:
+    build: ./ByCoders.Challenge.Api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db;Database=bycoders_db;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;
+    ports:
+      - "5000:80"
+```
+
+Authored by Fabricio Gabrielli da Silva - [GitHub](https://github.com/fabriciogs)
