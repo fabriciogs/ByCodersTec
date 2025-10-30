@@ -2,6 +2,7 @@
 using Application.Repositories;
 using Domain.Entities;
 using FixedWidthParserWriter;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Application.Services
 {
@@ -24,6 +25,12 @@ namespace Application.Services
 
         public async Task ProcessCnabFileAsync(List<string> dataLines, string fileName, string? userId)
         {
+            var totalLines = dataLines.Count;
+
+            // Validate input lines (eliminate empty or too long lines)
+            dataLines = [.. dataLines.Where(line => !string.IsNullOrWhiteSpace(line) && line.Length == 81)];
+            if (dataLines.Count == 0) throw new ArgumentException("No valid data provided");
+
             // Parse and validate lines into transactions
             var transactions = new List<Transaction>();
             var transactionLines = new FixedWidthLinesProvider<TransactionDto>().Parse(dataLines);
@@ -36,7 +43,7 @@ namespace Application.Services
             }
 
             // Update import file row counts
-            importFile.UpdateRowCounts(dataLines.Count, dataLines.Count - (dataLines.Count - transactions.Count));
+            importFile.UpdateRowCounts(totalLines, totalLines - (totalLines - transactions.Count));
 
             // Save transactions to repository
             await repository.SaveTransactionsAsync(importFile, transactions);

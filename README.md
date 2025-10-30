@@ -33,13 +33,13 @@ This project meets all required criteria and includes extra points for:
 
 ## Project Structure
 
-ByCoders/
-├── ByCoders.Domain/          # Entities, value objects
-├── ByCoders.Application/     # Use cases, DTOs, interfaces
-├── ByCoders.Infrastructure/  # Dapper repos, EF Identity
-├── ByCoders.WebApi/          # Web API, Controllers, Program.cs
-├── ByCoders.Presentation/    # Presentation (Html + CSS), Controllers, Views, Program.cs
-├── ByCoders.Tests/           # Unit tests (>70% coverage)
+ByCodersTec/
+├── ByCodersTec.Domain/          # Entities, value objects
+├── ByCodersTec.Application/     # Use cases, DTOs, interfaces
+├── ByCodersTec.Infrastructure/  # Dapper repos, EF Identity
+├── ByCodersTec.WebApi/          # Web API, Controllers, Program.cs
+├── ByCodersTec.Presentation/    # Presentation (Html + CSS), Controllers, Views, Program.cs
+├── ByCodersTec.Tests/           # Unit tests (>70% coverage)
 ├── docker-compose.yml
 └── README.md
 
@@ -100,7 +100,7 @@ sudo apt update && sudo apt install mssql-server
 **Option 1:** Local Development (.NET CLI)
 
 ```
-cd ByCoders.WebApi
+cd ByCodersTec.WebApi
 dotnet run
 ```
 
@@ -176,7 +176,7 @@ services:
       retries: 10
 
   api:
-    build: ./ByCoders.Challenge.Api
+    build: ./ByCodersTec.Challenge.Api
     depends_on:
       db:
         condition: service_healthy

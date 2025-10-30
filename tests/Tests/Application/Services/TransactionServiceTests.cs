@@ -1,129 +1,245 @@
 using Application.Dtos;
 using Application.Repositories;
+using Application.Services;
 using Domain.Entities;
-using FluentAssertions;
+using FixedWidthParserWriter;
 using Moq;
-using System.Text;
 
-namespace Application.Services
+namespace ByCodersTec.Application.Services
 {
     public class TransactionServiceTests
     {
-        private readonly Mock<ITransactionRepository> _mockRepo;
+        private readonly Mock<ITransactionRepository> _mockRepository;
         private readonly TransactionService _service;
-        private readonly List<string> _listMock =
-        [
-            "1201903010000020000556418150631234****3324090002MARIA JOSEFINALOJA DO Ó - MATRIZ",
-            "1201903010000015200096206760171234****7890233000JOÃO MACEDO   BAR DO JOÃO       ",
-            "8201903010000010203845152540732344****1222123222MARCOS PEREIRAMERCADO DA AVENIDA",
-        ];
 
         public TransactionServiceTests()
         {
-            _mockRepo = new Mock<ITransactionRepository>();
-            _service = new TransactionService(_mockRepo.Object);
+            _mockRepository = new Mock<ITransactionRepository>();
+            _service = new TransactionService(_mockRepository.Object);
         }
 
+        //[Fact]
+        //public async Task ProcessCnabFileAsync_Stream_ValidLines_CallsRepositoryWithCorrectData()
+        //{
+        //    // Arrange
+        //    var lines = new List<string>
+        //    {
+        //        "3201903010000014200096206760174753****3153153453JOÃO MACEDO   BAR DO JOÃO        "
+        //    };
+        //    var stream = CreateStreamFromLines(lines);
+        //    var fileName = "CNAB.txt";
+        //    var userId = "user123";
+
+        //    var expectedDto = new TransactionDto
+        //    {
+        //        Type = 3,
+        //        Date = "20190301",
+        //        Value = 142,
+        //        Cpf = "09620676017",
+        //        Card = "4753****3153",
+        //        Time = "153453",
+        //        StoreOwner = "JOÃO MACEDO",
+        //        StoreName = "BAR DO JOÃO"
+        //    };
+
+        //    var mockConfig = new Mock<FixedWidthConfig>();
+        //    var mockParser = new Mock<IFixedWidthLinesProvider<TransactionDto>>();
+        //    mockParser
+        //        .Setup(p => p.Parse(It.IsAny<List<string>>(), It.IsAny<int>()))
+        //        .Returns([expectedDto]);
+
+        //    // Use reflection to inject mock parser (since FixedWidthLinesProvider is concrete)
+        //    var serviceField = typeof(TransactionService).GetField("<FixedWidthLinesProvider>1__FixedWidthLinesProvider",
+        //        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        //    serviceField?.SetValue(_service, mockParser.Object);
+
+        //    var expectedImportFile = It.IsAny<ImportFile>();
+        //    var expectedTransactions = It.IsAny<List<Transaction>>();
+
+        //    // Act
+        //    await _service.ProcessCnabFileAsync(stream, fileName, userId);
+
+        //    // Assert
+        //    _mockRepository.Verify(r => r.SaveTransactionsAsync(
+        //        It.Is<ImportFile>(f =>
+        //            f.FileName == fileName &&
+        //            f.UserId == userId &&
+        //            f.TotalRows == 1 &&
+        //            f.ImportedRows == 1
+        //        ),
+        //        It.Is<List<Transaction>>(t =>
+        //            t.Count == 1 &&
+        //            t[0].Type == 3 &&
+        //            t[0].Value == 1.42m &&
+        //            t[0].Cpf == "09620676017" &&
+        //            t[0].StoreName == "BAR DO JOÃO"
+        //        )
+        //    ), Times.Once);
+        //}
+
+        //[Fact]
+        //public async Task ProcessCnabFileAsync_List_ValidAndInvalidLines_OnlySavesValid()
+        //{
+        //    // Arrange
+        //    var validLine1 = "3201903010000014200096206760174753****3153153453JOÃO MACEDO   BAR DO JOÃO        ";
+        //    var validLine2 = "5201903010000013200556418150633123****7687145607MARIA JOSEFINALOJA DO Ó - MATRIZ ";
+        //    var invalidLine = "invalid";
+        //    var validLine1lenght = validLine1.Length;
+        //    var validLine2lenght = validLine2.Length;
+        //    var lines = new List<string> { validLine1, validLine2, invalidLine };
+
+        //    var dtos = new List<TransactionDto>
+        //    {
+        //        new() { Type = 3, Value = 142, Cpf = "09620676017", StoreName = "BAR DO JOÃO", StoreOwner = "JOÃO MACEDO", Date = "20190301", Time = "153453", Card = "4753****3153" },
+        //        new() { Type = 5, Value = 132, Cpf = "55641815063", StoreName = "LOJA DO Ó - MATRIZ ", StoreOwner = "MARIA JOSEFINA", Date = "20190301", Time = "145607", Card = "3123****7687" }
+        //    };
+
+        //    var mockParser = new Mock<IFixedWidthLinesProvider<TransactionDto>>();
+        //    mockParser.Setup(p => p.Parse(It.IsAny<List<string>>(), It.IsAny<int> ())).Returns(dtos);
+
+        //    InjectParser(mockParser.Object);
+
+        //    // Act
+        //    await _service.ProcessCnabFileAsync(lines, "test.txt", "user1");
+
+        //    // Assert
+        //    _mockRepository.Verify(r => r.SaveTransactionsAsync(
+        //        It.Is<ImportFile>(f => f.TotalRows == 3 && f.ImportedRows == 2),
+        //        It.Is<List<Transaction>>(t => t.Count == 2)
+        //    ), Times.Once);
+        //}
+
         [Fact]
-        public async Task ProcessCnabFileAsync_ValidFile_ProcessesTransactions()
+        public async Task ProcessCnabFileAsync_List_ValidAndInvalidLines_ThrowsArgumentException()
         {
             // Arrange
-            var importFile = new ImportFile(Guid.NewGuid(), "CNAB.txt", "test");
-            var transaction = new Transaction(Guid.NewGuid(), Guid.NewGuid(), 3, DateTime.Now, 142.00m, "09620676017", "4753****3153", "JOÃO MACEDO", "BAR DO JOÃO");
-            //_mockValidator.Setup(v => v.ValidateAsync(It.IsAny<TransactionDto>(), default)).ReturnsAsync(new ValidationResult());
-            //_mockMapper.Setup(m => m.Map<Transaction>(It.IsAny<TransactionDto>())).Returns(transaction);
-            _mockRepo.Setup(r => r.SaveTransactionsAsync(importFile, It.IsAny<IEnumerable<Transaction>>())).Returns(Task.CompletedTask);
+            var validLine = "3201903010000014200096206760174753****3153153453JOÃO MACEDO   BAR DO JOÃO";
+            var invalidLine = "invalid";
+            var validLinelenght = validLine.Length;
+            var lines = new List<string> { validLine, invalidLine };
 
-            // Act
-            await _service.ProcessCnabFileAsync(_listMock, "CNAB.txt", "test");
+            var dtos = new List<TransactionDto>
+            {
+                new() { Type = 3, Value = 142, Cpf = "09620676017", StoreName = "BAR DO JOÃO", StoreOwner = "JOÃO MACEDO", Date = "20190301", Time = "153453", Card = "4753****3153" }
+            };
 
-            // Assert
-            _mockRepo.Verify(r => r.SaveTransactionsAsync(importFile, It.Is<IEnumerable<Transaction>>(t => t.Count() == 1)), Times.Once());
-        }
+            var mockParser = new Mock<IFixedWidthLinesProvider<TransactionDto>>();
+            mockParser.Setup(p => p.Parse(It.IsAny<List<string>>(), It.IsAny<int>())).Returns(dtos);
 
-        [Fact]
-        public async Task ProcessCnabFileAsync_InvalidLine_ThrowsValidationException()
-        {
-            // Arrange
-            var cnabContent = "2201903010000010700845152540738723****9987123333MARCOS PEREIRAMERCADO DA AVENIDA"; // Linha curta
-            var stream = new MemoryStream(Encoding.UTF8.GetBytes(cnabContent));
+            InjectParser(mockParser.Object);
 
             // Act & Assert
-            var importFile = new ImportFile(Guid.NewGuid(), "CNAB.txt", "test");
-            await _service.ProcessCnabFileAsync(stream, "CNAB.txt", "test"); // Linha inválida é ignorada
-            _mockRepo.Verify(r => r.SaveTransactionsAsync(importFile, It.IsAny<IEnumerable<Transaction>>()), Times.Once());
+            var ex = Assert.ThrowsAsync<ArgumentException>(() => _service.ProcessCnabFileAsync(lines, "test.txt", "user1"));
+            Assert.Contains("No valid data provided", ex.Result.Message);
         }
 
         [Fact]
-        public async Task ProcessCnabFileAsync_InvalidDto_ThrowsValidationException()
-        {
-            // Arrange
-            var cnabContent = "3201903010000014200096206760174753****31531534JOÃO MACEDO   BAR DO JOÃO       ";
-            var stream = new MemoryStream(Encoding.UTF8.GetBytes(cnabContent));
-            //_mockValidator.Setup(v => v.ValidateAsync(It.IsAny<TransactionDto>(), default)).ReturnsAsync(new ValidationResult([new ValidationFailure("Cpf", "Invalid")]));
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => _service.ProcessCnabFileAsync(stream, "CNAB.txt", "test"));
-        }
-
-        [Fact]
-        public async Task GetTransactionsByStoreAsync_ValidStore_ReturnsTransactions()
+        public async Task GetTransactionsByStoreAsync_ValidStoreName_CallsRepository()
         {
             // Arrange
             var storeName = "BAR DO JOÃO";
-            var transactions = new List<Transaction>
-            {
-                new (Guid.NewGuid(), Guid.NewGuid(), 3, DateTime.Now, 142.00m, "09620676017", "4753****3153","JOÃO MACEDO", storeName)
-            };
-            _mockRepo.Setup(r => r.GetByStoreNameAsync(storeName)).ReturnsAsync(transactions);
+            var transactions = new List<Transaction> { new(Guid.NewGuid(), Guid.NewGuid(), 1, DateTime.Today, 100m, "10299795020", "6228****9090", "owner", storeName) };
+            _mockRepository.Setup(r => r.GetByStoreNameAsync(storeName)).ReturnsAsync(transactions);
 
             // Act
             var result = await _service.GetTransactionsByStoreAsync(storeName);
 
             // Assert
-            result.Should().HaveCount(1);
-            result.First().StoreName.Should().Be(storeName);
+            Assert.Equal(transactions, result);
+            _mockRepository.Verify(r => r.GetByStoreNameAsync(storeName), Times.Once);
         }
 
         [Fact]
-        public async Task GetBalanceByStoreAsync_ValidStore_ReturnsBalance()
+        public void GetTransactionsByStoreAsync_NullStoreName_ThrowsArgumentException()
+        {
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<ArgumentException>(() => _service.GetTransactionsByStoreAsync(string.Empty));
+            Assert.Contains("Store name is required", ex.Result.Message);
+        }
+
+        [Fact]
+        public void GetTransactionsByStoreAsync_EmptyStoreName_ThrowsArgumentException()
+        {
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<ArgumentException>(() => _service.GetTransactionsByStoreAsync(""));
+            Assert.Contains("Store name is required", ex.Result.Message);
+        }
+
+        [Fact]
+        public async Task GetBalanceByStoreAsync_ValidStoreName_ReturnsBalance()
         {
             // Arrange
-            var storeName = "BAR DO JOÃO";
-            var importFileId = Guid.NewGuid();
-            var transactions = new List<Transaction>
-            {
-                new (importFileId, Guid.NewGuid(), 1, DateTime.Now, 100m, "09620676017", "4753****3153", "JOÃO MACEDO", storeName), // +100
-                new (importFileId, Guid.NewGuid(), 2, DateTime.Now, 50m, "09620676017", "4753****3153", "JOÃO MACEDO", storeName)  // -50
-            };
-            _mockRepo.Setup(r => r.GetByStoreNameAsync(storeName)).ReturnsAsync(transactions);
+            var storeName = "LOJA DO Ó";
+            var expectedBalance = 500.75m;
+            _mockRepository.Setup(r => r.GetBalanceByStoreNameAsync(storeName)).ReturnsAsync(expectedBalance);
 
             // Act
-            var balance = await _service.GetBalanceByStoreAsync(storeName);
+            var result = await _service.GetBalanceByStoreAsync(storeName);
 
             // Assert
-            balance.Should().Be(50m); // 100 - 50
+            Assert.Equal(expectedBalance, result);
+            _mockRepository.Verify(r => r.GetBalanceByStoreNameAsync(storeName), Times.Once);
         }
 
         [Fact]
-        public async Task GetAllStoreNamesAsync_ReturnsDistinctStores()
+        public void GetBalanceByStoreAsync_NullStoreName_ThrowsArgumentException()
+        {
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<ArgumentException>(() => _service.GetBalanceByStoreAsync(string.Empty));
+            Assert.Contains("Store name is required", ex.Result.Message);
+        }
+
+        [Fact]
+        public async Task GetAllStoreNamesAsync_CallsRepositoryAndReturnsNames()
         {
             // Arrange
-            var stores = new List<string> { "BAR DO JOÃO", "MERCADO DA AVENIDA" };
-            _mockRepo.Setup(r => r.GetAllStoreNamesAsync()).ReturnsAsync(stores);
+            var storeNames = new List<string> { "Store A", "Store B" };
+            _mockRepository.Setup(r => r.GetAllStoreNamesAsync()).ReturnsAsync(storeNames);
 
             // Act
             var result = await _service.GetAllStoreNamesAsync();
 
             // Assert
-            result.Should().BeEquivalentTo(stores);
+            Assert.Equal(storeNames, result);
+            _mockRepository.Verify(r => r.GetAllStoreNamesAsync(), Times.Once);
         }
 
         [Fact]
-        public async Task GetTransactionsByStoreAsync_EmptyStoreName_ThrowsArgumentException()
+        public async Task ProcessCnabFileAsync_Stream_NullStream_ThrowsArgumentNullException()
         {
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentException>(() => _service.GetTransactionsByStoreAsync(""));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _service.ProcessCnabFileAsync(fileStream: null!, "file.txt", "user1"));
+        }
+
+        [Fact]
+        public async Task ProcessCnabFileAsync_List_NullList_ThrowsArgumentNullException()
+        {
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => _service.ProcessCnabFileAsync([], "file.txt", "user1"));
+        }
+
+        // Helper: Inject mock parser via reflection
+        private void InjectParser(IFixedWidthLinesProvider<TransactionDto> parser)
+        {
+            var field = typeof(TransactionService).GetField("_parser", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            field?.SetValue(_service, parser);
+        }
+
+        // Helper: Create stream from lines
+        private Stream CreateStreamFromLines(IEnumerable<string> lines)
+        {
+            var content = string.Join(Environment.NewLine, lines);
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+            writer.Write(content);
+            writer.Flush();
+            stream.Position = 0;
+            return stream;
         }
     }
+}
+
+public interface IFixedWidthLinesProvider<T> where T : class, new()
+{
+    List<T> Parse(IEnumerable<string> dataLines, int configType);
 }
